@@ -1,6 +1,5 @@
 (defproject file-upload "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "An experiment in doing file uploads from within a Reagent SPA"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
