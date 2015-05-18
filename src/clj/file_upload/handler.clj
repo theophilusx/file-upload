@@ -24,8 +24,12 @@
 
 (defn handle-upload [req]
   (let [params (:params req)]
+    (println (str "Recieved upload request: File"
+                  "\nFile: " (get-in params [:upload-file :filename])
+                  "\nSize: " (get-in params [:upload-file :size]) " bytes"
+                  "\nTempfile: " (get-in params [:upload-file :tempfile])))
     {:status 200
-     :headers {"Content-Type" "applicaiton/json"}
+     :headers {"Content-Type" "application/json"}
      :body (generate-string
             {:filename (get-in params [:upload-file :filename])
              :size (get-in params [:upload-file :size])

@@ -35,10 +35,9 @@
     [:labe "Upload Filename: "]
     [:input {:type "file"
              :name "upload-file"
-             :id "upload-file"}]]
-   [:hr]])
+             :id "upload-file"}]]])
 
-
+;;; cljs-ajax upload routines
 (defn handle-response-ok [resp]
   (let [rsp (js->clj resp)]
     (.log js/console (str "Response OK: " rsp))
@@ -48,7 +47,6 @@
                                   [:li "Tempfile: " (get rsp "tempfile")]])
     (session/put! :upload-error nil)))
 
-;;; cljs-ajax upload routines
 (defn handle-response-error [ctx]
   (.log js/console (str "Response ERROR: " ctx))
   (session/put! :upload-error (str ctx))
@@ -69,11 +67,54 @@
 
 (defn cljs-ajax-upload-button []
   [:div
+   [:hr]
    [:button {:type "button"
              :on-click #(cljs-ajax-upload-file "upload-file")}
     "Upload using cljs-ajax"]])
 
 ;;; goog.net.IFrameIO routines
+(defn iframe-response-ok [json-msg]
+  (let [msg (js->clj json-msg)]
+    (.log js/console (str "iframe-response-ok: " msg))
+    (session/put! :upload-status [:ul
+                                  [:li "Filename: " (get msg "filename")]
+                                  [:li "Size: " (str (get msg "size") " bytes")]
+                                  [:li "Tempfile: " (get msg "tempfile")]])
+    (session/put! :upload-error nil)))
+
+(defn iframe-response-error [json-msg]
+  (let [msg (js->clj json-msg)]
+    (.log js/console (str "iframe-response-error: " msg))
+    (session/put! :upload-error msg)
+    (session/put! :upload-status nil)))
+
+;;; Stole this from Dmitri Sotnikov - thanks.
+;;; Original code is at https://github.com/yogthos
+(defn iframeio-upload-file [form-id]
+  (let [el (.getElementById js/document form-id)
+        iframe (IframeIo.)]
+    (.log js/console (str "El: " el))
+    (events/listen iframe goog.net.EventType.SUCCESS
+                   (fn [event]
+                     (.log js/console "Success event fired")
+                     (iframe-response-ok (.getResponseJson iframe))))
+    (events/listen iframe goog.net.EventType.ERROR
+                   (fn [event]
+                     (.log js/console "Error event fired")
+                     (iframe-response-error (.getResponseJson iframe))))
+    (events/listen iframe goog.net.EventType.COMPLETE
+                   (fn [event]
+                     (.log js/console "Complete event fired")))
+    (.log js/console (str "About to send file"))
+    (.sendFromForm iframe el "/upload")
+    (.log js/console (str "File sent?"))))
+
+(defn iframeio-upload-button []
+  [:div
+   [:hr]
+   [:button {:type "button"
+             :on-click #(iframeio-upload-file "upload-form")}
+    "IframeIo Upload File"]])
 
 (defn home-page []
   (fn []
@@ -84,6 +125,8 @@
      [error-component]
      [upload-component]
      [cljs-ajax-upload-button]
+     [iframeio-upload-button]
+     [:hr]
      [:div [:a {:href "#/about"} "go to about page"]]]))
 
 (defn about-page []
@@ -113,6 +156,7 @@
      (fn [event]
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
+
 
 ;; -------------------------
 ;; Initialize app
