@@ -37,6 +37,23 @@ So far, the three techniques I've looked at and will attempt are
       documentation I was able to locate for Google's Closure library. Not sure what
       the advantages/disadvantages are over IframIo. 
 
+Running The Example
+-------------------
+
+To run the example,
+
+1. Cone the repo to your local system
+
+2. cd into the root and run
+
+`lein ring server`
+
+3. In another terminal run
+
+`lein figwheel`
+
+4. In your browser, visit http://localhost:3000
+
 
 **WARNING** This repo is my playground and a rough experiment and PoC. It will almost
 certainly have errors, will constantly be in need of re-factoring and will lack any
