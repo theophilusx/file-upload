@@ -23,21 +23,33 @@
      (include-js "js/app.js")]]))
 
 (defn handle-upload [req]
-  (let [params (:params req)]
-    (println (str "Recieved upload request: File"
-                  "\nFile: " (get-in params [:upload-file :filename])
-                  "\nSize: " (get-in params [:upload-file :size]) " bytes"
-                  "\nTempfile: " (get-in params [:upload-file :tempfile])))
-    {:status 200
-     :headers {"Content-Type" "application/json"}
-     :body (generate-string
-            {:filename (get-in params [:upload-file :filename])
-             :size (get-in params [:upload-file :size])
-             :tempfile (str (get-in params [:upload-file :tempfile]))})}))
+  (let [{:keys [filename size tempfile]} (get-in req [:params :upload-file])]
+    (println (str "handle-upload: Filename: " filename " size: " size
+                  " tempfile: " (str tempfile)))
+    (cond
+      (= "" filename) {:status 400
+                       :headers {"Content-Type" "application/json"}
+                       :body (generate-string {:status "ERROR"
+                                               :message "No file parameter sent"})}
+      (< size 100) {:status 400
+                    :headers {"Content-Type" "application/json"}
+                    :body (generate-string {:status "ERROR"
+                                            :message (str "File less than 100 bytes"
+                                                          " - Can't be bothered")})}
+      (>= size 100) {:status 200
+                     :headers {"Content-Type" "application/json"}
+                     :body (generate-string {:status "OK"
+                                             :filename filename
+                                             :size size
+                                             :tempfile (str tempfile)})}
+      :else {:status 400
+             :headers {"Content-Type" "application/json"}
+             :body (generate-string {:status "ERROR"
+                                     :message "Unexpected Error"})})))
 
 (defroutes routes
   (GET "/" [] home-page)
-  (POST "/upload" [] handle-upload)
+  (POST "/upload" [upload-file] handle-upload)
   (resources "/")
   (not-found "Not Found"))
 

@@ -32,7 +32,6 @@
 ;;; cljs-ajax upload routines
 (defn handle-response-ok [resp]
   (let [rsp (js->clj resp)]
-    (.log js/console (str "Response OK: " rsp))
     (session/put! :upload-status [:div
                                   [:h4 "Upload Successful"]
                                   [:ul
@@ -41,10 +40,14 @@
                                    [:li "Tempfile: " (get rsp "tempfile")]]])))
 
 (defn handle-response-error [ctx]
-  (.log js/console (str "Response ERROR: " ctx))
-  (session/put! :upload-status [:div
-                                [:h4 "Upload Failure"]
-                                [:p (str ctx)]]))
+  (let [rsp (js->clj (:response ctx))]
+    (.log js/console (str "cljs-ajax error: " (:status ctx) " " (:status-text ctx)
+                          " " (get rsp "message")))
+    (session/put! :upload-status [:div
+                                  [:h4 "Upload Failure"]
+                                  [:ul
+                                   [:li (str (:status ctx) " " (:status-text ctx))]
+                                   [:li (get rsp "message")]]])))
 
 (defn cljs-ajax-upload-file [element-id]
   (let [el (.getElementById js/document element-id)
@@ -77,11 +80,13 @@
                                    [:li "Tempfile: " (get msg "tempfile")]]])))
 
 (defn iframe-response-error [json-msg]
-  (let [msg (js->clj json-msg)]
+  (let [msg (js->clj json-msg :keywordize-keys true)]
     (.log js/console (str "iframe-response-error: " msg))
     (session/put! :upload-status [:div
                                   [:h4 "Upload Failure"]
-                                  [:p (str msg)]])))
+                                  [:ul
+                                   [:li (str "Status " (:status msg))]
+                                   [:li (:message msg)]]])))
 
 ;;; Stole this from Dmitri Sotnikov - thanks.
 ;;; Original code is at https://github.com/yogthos
@@ -99,6 +104,7 @@
     (events/listen iframe goog.net.EventType.COMPLETE
                    (fn [event]
                      (.log js/console "Complete event fired")))
+    (.setErrorChecker iframe #(= "ERROR" (get (js->clj (.getResponseJson iframe)) "status")))
     (.sendFromForm iframe el "/upload")))
 
 (defn iframeio-upload-button []
