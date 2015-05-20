@@ -16,16 +16,8 @@
 (defn status-component []
   (if-let [status (session/get :upload-status)]
     [:div
-     [:h3 "Upload Status"]
-     [:p "The file was uploaded and the server returned the following"]
+     [:h3 "Status"]
      [:p status]]))
-
-(defn error-component []
-  (if-let [err (session/get :upload-error)]
-    [:div
-     [:h3 "Upload Error"]
-     [:p "The file upload has failed. The following error was detected"]
-     [:p err]]))
 
 (defn upload-component []
   [:div
@@ -41,16 +33,18 @@
 (defn handle-response-ok [resp]
   (let [rsp (js->clj resp)]
     (.log js/console (str "Response OK: " rsp))
-    (session/put! :upload-status [:ul
-                                  [:li "Filename: " (get rsp "filename")]
-                                  [:li "Size: " (str (get rsp "size") " bytes")]
-                                  [:li "Tempfile: " (get rsp "tempfile")]])
-    (session/put! :upload-error nil)))
+    (session/put! :upload-status [:div
+                                  [:h4 "Upload Successful"]
+                                  [:ul
+                                   [:li "Filename: " (get rsp "filename")]
+                                   [:li "Size: " (str (get rsp "size") " bytes")]
+                                   [:li "Tempfile: " (get rsp "tempfile")]]])))
 
 (defn handle-response-error [ctx]
   (.log js/console (str "Response ERROR: " ctx))
-  (session/put! :upload-error (str ctx))
-  (session/put! :upload-status nil))
+  (session/put! :upload-status [:div
+                                [:h4 "Upload Failure"]
+                                [:p (str ctx)]]))
 
 (defn cljs-ajax-upload-file [element-id]
   (let [el (.getElementById js/document element-id)
@@ -75,25 +69,25 @@
 ;;; goog.net.IFrameIO routines
 (defn iframe-response-ok [json-msg]
   (let [msg (js->clj json-msg)]
-    (.log js/console (str "iframe-response-ok: " msg))
-    (session/put! :upload-status [:ul
-                                  [:li "Filename: " (get msg "filename")]
-                                  [:li "Size: " (str (get msg "size") " bytes")]
-                                  [:li "Tempfile: " (get msg "tempfile")]])
-    (session/put! :upload-error nil)))
+    (session/put! :upload-status [:div
+                                  [:h4 "Upload Success"]
+                                  [:ul
+                                   [:li "Filename: " (get msg "filename")]
+                                   [:li "Size: " (str (get msg "size") " bytes")]
+                                   [:li "Tempfile: " (get msg "tempfile")]]])))
 
 (defn iframe-response-error [json-msg]
   (let [msg (js->clj json-msg)]
     (.log js/console (str "iframe-response-error: " msg))
-    (session/put! :upload-error msg)
-    (session/put! :upload-status nil)))
+    (session/put! :upload-status [:div
+                                  [:h4 "Upload Failure"]
+                                  [:p (str msg)]])))
 
 ;;; Stole this from Dmitri Sotnikov - thanks.
 ;;; Original code is at https://github.com/yogthos
 (defn iframeio-upload-file [form-id]
   (let [el (.getElementById js/document form-id)
         iframe (IframeIo.)]
-    (.log js/console (str "El: " el))
     (events/listen iframe goog.net.EventType.SUCCESS
                    (fn [event]
                      (.log js/console "Success event fired")
@@ -105,24 +99,21 @@
     (events/listen iframe goog.net.EventType.COMPLETE
                    (fn [event]
                      (.log js/console "Complete event fired")))
-    (.log js/console (str "About to send file"))
-    (.sendFromForm iframe el "/upload")
-    (.log js/console (str "File sent?"))))
+    (.sendFromForm iframe el "/upload")))
 
 (defn iframeio-upload-button []
   [:div
    [:hr]
    [:button {:type "button"
              :on-click #(iframeio-upload-file "upload-form")}
-    "IframeIo Upload File"]])
+    "Upload Using IFrameIO"]])
 
 (defn home-page []
   (fn []
     [:div [:h2 "Welcome to file-upload"]
      [:p "This provides an example of different methods to upload a "
-      "file to the server fro a reagent based SPA."]
+      "file to the server fro a Reagent based client."]
      [status-component]
-     [error-component]
      [upload-component]
      [cljs-ajax-upload-button]
      [iframeio-upload-button]
