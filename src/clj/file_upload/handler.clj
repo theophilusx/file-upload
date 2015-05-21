@@ -4,8 +4,6 @@
             [compojure.route :refer [not-found resources]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.format :refer [wrap-restful-format]]
-            [hiccup.core :refer [html]]
-            [hiccup.page :refer [include-js include-css]]
             [prone.middleware :refer [wrap-exceptions]]
             [cheshire.core :refer [generate-string]]
             [environ.core :refer [env]]

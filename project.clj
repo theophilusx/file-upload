@@ -16,11 +16,10 @@
                  [ring/ring-defaults "0.1.5"]
                  [ring-middleware-format "0.5.0"]
                  [cheshire "5.4.0"]
-                 [prone "0.8.1"]
+                 [prone "0.8.2"]
                  [compojure "1.3.4"]
-                 [hiccup "1.0.5"]
                  [environ "1.0.0"]
-                 [org.clojure/clojurescript "0.0-3269" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-3291" :scope "provided"]
                  [cljs-ajax "0.3.11"]
                  [secretary "1.2.3"]]
 
@@ -62,7 +61,7 @@
                                   [pjstadig/humane-test-output "0.7.0"]]
 
                    :source-paths ["env/dev/clj"]
-                   :plugins [[lein-figwheel "0.3.2"]
+                   :plugins [[lein-figwheel "0.3.3"]
                              [lein-cljsbuild "1.0.6"]]
 
                    :injections [(require 'pjstadig.humane-test-output)
