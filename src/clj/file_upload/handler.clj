@@ -9,29 +9,26 @@
             [environ.core :refer [env]]
             [clojure.java.io :as io]))
 
+(defn make-response [status value-map]
+  {:status status
+   :headers {"Content-Type" "application/json"}
+   :body (generate-string value-map)})
+
 (defn handle-upload [{:keys [filename size tempfile]}]
-  (println (str "handle-upload: Filename: " filename " size: " size
-                " tempfile: " (str tempfile)))
+  (println (str "handle-upload: Filename: " (or filename "null") " size: "
+                (or size 0) " tempfile: " (str (or tempfile "null"))))
   (cond
-    (= "" filename) {:status 400
-                     :headers {"Content-Type" "application/json"}
-                     :body (generate-string {:status "ERROR"
-                                             :message "No file parameter sent"})}
-    (< size 100) {:status 400
-                  :headers {"Content-Type" "application/json"}
-                  :body (generate-string {:status "ERROR"
-                                          :message (str "File less than 100 bytes"
-                                                        " - Can't be bothered")})}
-    (>= size 100) {:status 200
-                   :headers {"Content-Type" "application/json"}
-                   :body (generate-string {:status "OK"
-                                           :filename filename
-                                           :size size
-                                           :tempfile (str tempfile)})}
-    :else {:status 400
-           :headers {"Content-Type" "application/json"}
-           :body (generate-string {:status "ERROR"
-                                   :message "Unexpected Error"})}))
+    (not filename) (make-response 400 {:status "ERROR"
+                                       :message "No file parameter sent"})
+    (< size 100) (make-response 400 {:status "ERROR"
+                                     :message (str "File less than 100 bytes"
+                                                   " - Can't be bothered")})
+    (>= size 100) (make-response 200 {:status "OK"
+                                      :filename filename
+                                      :size (or size 0)
+                                      :tempfile (str tempfile)})
+    :else (make-response 400 {:status "ERROR"
+                              :message "Unexpected Error"})))
 
 (defroutes routes
   (GET "/" [] (slurp (io/resource "public/index.html")))

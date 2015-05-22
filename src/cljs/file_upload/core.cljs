@@ -17,7 +17,7 @@
   (if-let [status (session/get :upload-status)]
     [:div
      [:h3 "Status"]
-     [:p status]]))
+     status]))
 
 (defn upload-component []
   [:div
@@ -32,7 +32,7 @@
 ;;; cljs-ajax upload routines
 (defn handle-response-ok [resp]
   (let [rsp (js->clj resp)]
-    (session/put! :upload-status [:div
+    (session/put! :upload-status [:div {:class "alert alert-success"}
                                   [:h4 "Upload Successful"]
                                   [:ul
                                    [:li "Filename: " (get rsp "filename")]
@@ -43,7 +43,7 @@
   (let [rsp (js->clj (:response ctx))]
     (.log js/console (str "cljs-ajax error: " (:status ctx) " " (:status-text ctx)
                           " " (get rsp "message")))
-    (session/put! :upload-status [:div
+    (session/put! :upload-status [:div {:class "alert alert-danger"}
                                   [:h4 "Upload Failure"]
                                   [:ul
                                    [:li (str (:status ctx) " " (:status-text ctx))]
@@ -72,7 +72,7 @@
 ;;; goog.net.IFrameIO routines
 (defn iframe-response-ok [json-msg]
   (let [msg (js->clj json-msg)]
-    (session/put! :upload-status [:div
+    (session/put! :upload-status [:div {:class "alert alert-success"}
                                   [:h4 "Upload Success"]
                                   [:ul
                                    [:li "Filename: " (get msg "filename")]
@@ -82,7 +82,7 @@
 (defn iframe-response-error [json-msg]
   (let [msg (js->clj json-msg :keywordize-keys true)]
     (.log js/console (str "iframe-response-error: " msg))
-    (session/put! :upload-status [:div
+    (session/put! :upload-status [:div {:class "alert alert-danger"}
                                   [:h4 "Upload Failure"]
                                   [:ul
                                    [:li (str "Status " (:status msg))]
