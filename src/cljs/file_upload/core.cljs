@@ -29,6 +29,13 @@
              :name "upload-file"
              :id "upload-file"}]]])
 
+(defn set-upload-indicator []
+  (session/put! :upload-status [:div 
+                                [:h4 "Upload In Progress"]
+                                [:p
+                                 [:span {:class "fa fa-spinner fa-spin fa-pulse fa-5x"}]]
+                                [:p]]))
+
 ;;; cljs-ajax upload routines
 (defn handle-response-ok [resp]
   (let [rsp (js->clj resp)]
@@ -59,8 +66,8 @@
     (POST "/upload" {:params form-data
                      :response-format :json
                      :handler handle-response-ok
-                     :error-handler handle-response-error
-                     :timeout 1000})))
+                     :error-handler handle-response-error})
+    (set-upload-indicator)))
 
 (defn cljs-ajax-upload-button []
   [:div

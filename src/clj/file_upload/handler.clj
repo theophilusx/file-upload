@@ -17,6 +17,8 @@
 (defn handle-upload [{:keys [filename size tempfile]}]
   (println (str "handle-upload: Filename: " (or filename "null") " size: "
                 (or size 0) " tempfile: " (str (or tempfile "null"))))
+  ;; lets slow things down so that we can see an upload indicator
+  (Thread/sleep 5000)
   (cond
     (not filename) (make-response 400 {:status "ERROR"
                                        :message "No file parameter sent"})
