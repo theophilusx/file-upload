@@ -72,7 +72,7 @@
 (defn cljs-ajax-upload-button []
   [:div
    [:hr]
-   [:button {:type "button"
+   [:button {:class "btn btn-primary" :type "button"
              :on-click #(cljs-ajax-upload-file "upload-file")}
     "Upload using cljs-ajax"]])
 
@@ -117,9 +117,10 @@
 (defn iframeio-upload-button []
   [:div
    [:hr]
-   [:button {:type "button"
+   [:button {:class "btn btn-primary"
+             :type "button"
              :on-click #(iframeio-upload-file "upload-form")}
-    "Upload Using IFrameIO"]])
+    "Upload Using IFrameIO " [:span {:class "fa fa-upload"}]]])
 
 (defn home-page []
   (fn []
