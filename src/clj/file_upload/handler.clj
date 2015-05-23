@@ -14,21 +14,28 @@
    :headers {"Content-Type" "application/json"}
    :body (generate-string value-map)})
 
-(defn handle-upload [{:keys [filename size tempfile]}]
+(defn handle-upload [{:keys [filename size tempfile] :as params}]
+  (println (str "Params: " params))
   (println (str "handle-upload: Filename: " (or filename "null") " size: "
                 (or size 0) " tempfile: " (str (or tempfile "null"))))
   ;; lets slow things down so that we can see an upload indicator
   (Thread/sleep 5000)
   (cond
-    (not filename) (make-response 400 {:status "ERROR"
-                                       :message "No file parameter sent"})
-    (< size 100) (make-response 400 {:status "ERROR"
-                                     :message (str "File less than 100 bytes"
-                                                   " - Can't be bothered")})
-    (>= size 100) (make-response 200 {:status "OK"
-                                      :filename filename
-                                      :size (or size 0)
-                                      :tempfile (str tempfile)})
+    ;; Seems ajax-cljs sets filename to null when no file selected prior to
+    ;; clicking upload button, but IframeIo sends ""
+    (or (not filename) 
+        (= "" filename))
+    (make-response 400 {:status "ERROR"
+                        :message "No file parameter sent"})
+    (< size 100)
+    (make-response 400 {:status "ERROR"
+                        :message (str "File less than 100 bytes"
+                                      " - Can't be bothered")})
+    (>= size 100)
+    (make-response 200 {:status "OK"
+                        :filename filename
+                        :size (or size 0)
+                        :tempfile (str tempfile)})
     :else (make-response 400 {:status "ERROR"
                               :message "Unexpected Error"})))
 
