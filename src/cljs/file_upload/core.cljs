@@ -30,10 +30,10 @@
              :id "upload-file"}]]])
 
 (defn set-upload-indicator []
-  (session/put! :upload-status [:div 
-                                [:h4 "Upload In Progress"]
-                                [:p [:span.fa.fa-spinner.fa-spin.fa-pulse.fa-4x]]
-                                [:p]]))
+  (let [class "fa fa-spinner fa-spin fa-pulse"]
+    (session/put! :upload-status [:div 
+                                  [:p "Uploading file... "
+                                   [:span {:class class}]]])))
 
 (defn into-list [items]
   (into [:ul]
@@ -43,28 +43,27 @@
 (defn set-status [class title items]
   [:div {:class class}
    [:h4 title]
-   [:p (into-list items)]])
+   (into-list items)])
 
 ;;; cljs-ajax upload routines
 (defn handle-response-ok [resp]
   (let [rsp (js->clj resp :keywordize-keys true)
-        items [(str "Filename: " (:filename rsp))
-               (str "Size: " (:size rsp))
-               (str "Tempfile: " (:tempfile rsp))]]
-    (session/put! :upload-status (set-status "alert alert-success"
-                                             "Upload Successful"
-                                             items))))
+        status (set-status "alert alert-success"
+                           "Upload Successful"
+                           [(str "Filename: " (:filename rsp))
+                            (str "Size: " (:size rsp))
+                            (str "Tempfile: " (:tempfile rsp))])]
+    (session/put! :upload-status status)))
 
 (defn handle-response-error [ctx]
   (let [rsp (js->clj (:response ctx) :keywordize-keys true)
-        items [(str (:status ctx) " "
-                    (:status-text ctx))
-               (str (:message rsp))]]
-    (.log js/console (str "cljs-ajax error: " (:status ctx) " "
-                          (:status-text ctx) " " (:message rsp)))
-    (session/put! :upload-status (set-status "alert alert-danger"
-                                             "Upload Failure"
-                                             items))))
+        status (set-status "alert alert-danger"
+                           "Upload Failure"
+                           [(str "Status: " (:status ctx) " "
+                                 (:status-text ctx))
+                            (str (:message rsp))])]
+    (.log js/console (str "cljs-ajax error: " status))
+    (session/put! :upload-status status)))
 
 (defn cljs-ajax-upload-file [element-id]
   (let [el (.getElementById js/document element-id)
@@ -89,19 +88,19 @@
 
 ;;; goog.net.IFrameIO routines
 (defn iframe-response-ok [msg]
-  (let [items [(str "Filename: " (:filename msg))
-               (str "Size: " (:size msg))
-               (str "Tempfile: " (:tempfile msg))]]
-    (session/put! :upload-status (set-status "alert alert-success"
-                                             "Upload Successful"
-                                             items))))
+  (let [status (set-status "alert alert-success"
+                           "Upload Successful"
+                           [(str "Filename: " (:filename msg))
+                            (str "Size: " (:size msg))
+                            (str "Tempfile: " (:tempfile msg))])]
+    (session/put! :upload-status status)))
 
 (defn iframe-response-error [msg]
-  (let [items [(str "Status: " (:status msg))
-               (str (:message msg))]]
-    (session/put! :upload-status (set-status "alert alert-danger"
-                                             "Upload Failure"
-                                             items))))
+  (let [status (set-status "alert alert-danger"
+                           "Upload Failure"
+                           [(str "Status: " (:status msg))
+                            (str (:message msg))])]
+    (session/put! :upload-status status)))
 
 (defn handle-iframe-response [json-msg]
   (let [msg (js->clj json-msg :keywordize-keys true)]
@@ -121,6 +120,8 @@
         iframe (IframeIo.)]
     (events/listen iframe goog.net.EventType.COMPLETE
                    (fn [event]
+                     (let [rsp (.getResponseJson iframe)
+                           status ()])
                      (handle-iframe-response (.getResponseJson iframe))
                      (.dispose iframe)))
     (set-upload-indicator)
