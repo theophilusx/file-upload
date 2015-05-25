@@ -19,7 +19,7 @@
                  [prone "0.8.2"]
                  [compojure "1.3.4"]
                  [environ "1.0.0"]
-                 [org.clojure/clojurescript "0.0-3291" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-3297" :scope "provided"]
                  [cljs-ajax "0.3.11"]
                  [secretary "1.2.3"]]
 
