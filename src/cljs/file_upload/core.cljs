@@ -7,8 +7,7 @@
             [goog.history.EventType :as HistoryEventType])
   (:import goog.History
            goog.net.IframeIo
-           goog.net.EventType
-           [goog.events EventType]))
+           [goog.net.EventType :as NetEventType]))
 
 ;; -------------------------
 ;; Views
@@ -118,7 +117,7 @@
 (defn iframeio-upload-file [form-id]
   (let [el (.getElementById js/document form-id)
         iframe (IframeIo.)]
-    (events/listen iframe goog.net.EventType.COMPLETE
+    (events/listen iframe NetEventType.COMPLETE
                    (fn [event]
                      (let [rsp (.getResponseJson iframe)
                            status ()])
